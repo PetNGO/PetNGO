@@ -7,7 +7,8 @@ db= client["PetNgo"]
 pet_collection = db["Pet"]
 user_collection = db["User"]
 
-def create(data):
+
+def create_pet(data):
     data = dict(data)
     response = pet_collection.insert_one(data)
     return response.inserted_id
@@ -24,3 +25,9 @@ def all():
         i["_id"] = str(i["_id"])
         data.append(i)
     return data
+
+def pet_info(pet_id):
+    response = pet_collection.find_one({"_id": pet_id})
+    print(response)
+    
+

@@ -19,3 +19,13 @@ def get_pets():
     return{"data":data}
 
 
+@app.post("/create-pet")
+def create_pet(data:model.Pet):
+    id  = DB.create_pet(data)
+    return{"id":id}
+
+@app.get("/pet/{petid}")
+def get_pet_info(petid):
+    id = DB.pet_info(petid)
+    return{"petinfo": id}
+
