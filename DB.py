@@ -1,5 +1,7 @@
 
 import pymongo 
+from bson.objectid import ObjectId
+from pymongo.errors import PyMongoError
 
 client = pymongo.MongoClient("mongodb+srv://akhileshpatil12168:48586566@petngo.nwv97.mongodb.net/")
 
@@ -26,8 +28,40 @@ def all():
         data.append(i)
     return data
 
-def pet_info(pet_id):
-    response = pet_collection.find_one({"_id": pet_id})
-    print(response)
-    
 
+def pet_info(pet_id):
+ 
+        print(pet_id)
+        response = pet_collection.find_one({"_id": ObjectId(pet_id), "isDeleted": False})
+        print(response)
+        if response is None:
+            return {"error": "Pet not found"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response
+  
+def update_pet_info(pet_id: str, data: dict):
+        response = pet_collection.find_one_and_update( {"_id": ObjectId(pet_id)}, {"$set": data}, return_document=True)
+        if response is None:
+            return {"error": "Pet not found"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response   
+
+  
+def delete_pet(pet_id: str):
+        response = pet_collection.find_one_and_update( {"_id": ObjectId(pet_id)}, {"$set": {"isDeleted": True}})
+        if response is None:
+            return {"error": "something went wrong"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response   

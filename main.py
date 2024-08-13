@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 
 import DB
 import model
@@ -26,6 +26,15 @@ def create_pet(data:model.Pet):
 
 @app.get("/pet/{petid}")
 def get_pet_info(petid):
-    id = DB.pet_info(petid)
-    return{"petinfo": id}
+    data = DB.pet_info(petid)
+    return{"petinfo": data}
 
+@app.put("/pet/{petid}/update")
+def update_pet_info(petid: str, data: dict = Body(...)):
+    data = DB.update_pet_info(petid,data)
+    return {"updated_data": data}
+
+@app.delete("/pet/{petid}")
+def delete_pet(petid: str,):
+    data = DB.delete_pet(petid)
+    return {"data deleted"}

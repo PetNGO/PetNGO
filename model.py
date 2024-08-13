@@ -6,10 +6,12 @@ class Pet(BaseModel):
     type:str
     description:str
     sex:str
+    isDeleted: bool = False
     
 class User(BaseModel):
     name:str
     phone:int
     email:str
     password:str
+    isDeleted: bool = False
     
