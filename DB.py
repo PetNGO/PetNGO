@@ -65,3 +65,41 @@ def delete_pet(pet_id: str):
             response["_id"] = str(response["_id"])
 
         return response   
+    
+    
+#User
+
+def User_info(User_id):
+ 
+        response = user_collection.find_one({"_id": ObjectId(User_id), "isDeleted": False})
+        if response is None:
+            return {"error": "User not found"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response
+  
+def update_User_info(user_id: str, data: dict):
+        response = user_collection.find_one_and_update( {"_id": ObjectId(user_id)}, {"$set": data}, return_document=True)
+        if response is None:
+            return {"error": "User not found"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response   
+
+  
+def delete_User(User_id: str):
+        response = user_collection.find_one_and_update( {"_id": ObjectId(User_id)}, {"$set": {"isDeleted": True}})
+        if response is None:
+            return {"error": "something went wrong"}
+        
+        # Convert ObjectId to string
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+
+        return response  
