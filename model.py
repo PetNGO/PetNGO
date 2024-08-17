@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from bson import ObjectId
 
 class Pet(BaseModel):
     name:str
@@ -14,4 +15,9 @@ class User(BaseModel):
     email:str
     password:str
     isDeleted: bool = False
+    
+class UserLogings(BaseModel):
+    userId: str
+    token: str
+    
     
