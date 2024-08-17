@@ -1,16 +1,36 @@
-import pymongo
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+import json
+
 from bson.objectid import ObjectId
 from pymongo.errors import PyMongoError
+import bcrypt 
+import jwt  
 
-client = pymongo.MongoClient("mongodb+srv://akhileshpatil12168:48586566@petngo.nwv97.mongodb.net/")
+from datetime import datetime
+
+
+try:
+    with open("config.json", "r") as config_file:
+        config = json.load(config_file)
+    
+    uri = config["mogoDB"]["mongoURI"]
+    client = MongoClient(uri, server_api=ServerApi('1'))
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
 
 db = client["PetNgo"]
 pet_collection = db["Pet"]
 user_collection = db["User"]
+user_logins_collection = db["User login"]
 
 def create_pet(data):
     try:
+        
         data = dict(data)
+        
         response = pet_collection.insert_one(data)
         return str(response.inserted_id)
     except PyMongoError:
@@ -18,7 +38,15 @@ def create_pet(data):
 
 def create_user(data):
     try:
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+            
         data = dict(data)
+        
+        bytes = data["password"].encode(config["bcrypt"]["encode_type"]) 
+        salt = bcrypt.gensalt(config["encode_type"]["salt"])
+        data["password"] = bcrypt.hashpw(bytes, salt)  
+        
         response = user_collection.insert_one(data)
         return str(response.inserted_id)
     except PyMongoError:
@@ -85,6 +113,35 @@ def delete_pet(pet_id: str):
         return "something went wrong"
 
 # User
+
+def login_user(data: dict):
+    try:
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+        
+        response = user_collection.find_one({"email":data["email"]})
+        if response is None:
+            return {"error": "email or password is wrong."}
+      
+        if "_id" in response:
+            response["_id"] = str(response["_id"])
+            
+        userBytes = data["password"].encode(config["bcrypt"]["encode_type"]) 
+        result = bcrypt.checkpw(userBytes, response["password"]) 
+        if(result is False):
+            return {"error": "email or password is wrong."}
+        
+        ct = datetime.now()
+        ts = ct.timestamp() + (20*60)
+        
+        payload = {"userId": response["_id"],"exp":ts}
+        
+        encoded_jwt = jwt.encode(payload, config["jwt"]["secret"], algorithm=config["jwt"]["algorithm"])  
+        
+        return {"token":encoded_jwt}
+        
+    except Exception as e:
+        return  e
 
 def User_info(User_id: str):
     try:

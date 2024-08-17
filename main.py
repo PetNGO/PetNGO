@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Body, HTTPException
+import uvicorn
 import DB
 import model
 
@@ -53,6 +54,16 @@ async def create_user(data: model.User):
         return {"id": id}
     except Exception:
         raise HTTPException(detail="something went wrong")
+    
+@app.post("/login")
+def login_user(data: dict = Body(...)):
+    try:
+        print(data)
+        response = DB.login_user(data)
+        return response
+    except  Exception as e:
+        print(e)
+    
 
 @app.get("/user/{userid}")
 async def get_user_info(userid: str):
@@ -77,3 +88,7 @@ async def delete_user(userid: str):
         return {"message": "User deleted"}
     except Exception:
         raise HTTPException(detail="something went wrong")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app=app)
