@@ -24,7 +24,7 @@ except Exception as e:
 db = client["PetNgo"]
 pet_collection = db["Pet"]
 user_collection = db["User"]
-user_logins_collection = db["User login"]
+logins_collection = db["logins"]
 
 def create_pet(data):
     try:
@@ -116,6 +116,7 @@ def delete_pet(pet_id: str):
 
 def login_user(data: dict):
     try:
+        print("hello")
         with open("config.json", "r") as config_file:
             config = json.load(config_file)
         
@@ -129,18 +130,24 @@ def login_user(data: dict):
         userBytes = data["password"].encode(config["bcrypt"]["encode_type"]) 
         result = bcrypt.checkpw(userBytes, response["password"]) 
         if(result is False):
-            return {"error": "email or password is wrong."}
+            return {"message": "email or password is wrong."}
         
         ct = datetime.now()
         ts = ct.timestamp() + (20*60)
         
-        payload = {"userId": response["_id"],"exp":ts}
+        bytes = response["_id"].encode(config["bcrypt"]["encode_type"]) 
+        salt = bcrypt.gensalt(config["bcrypt"]["salt"])
+        hased_user_id=  bcrypt.hashpw(bytes, salt)
         
-        encoded_jwt = jwt.encode(payload, config["jwt"]["secret"], algorithm=config["jwt"]["algorithm"])  
+        payload = {"userId":  str(hased_user_id) ,"exp":ts}
+        encoded_jwt = jwt.encode(payload, config["jwt"]["secret"], algorithm=config["jwt"]["algorithm"])
+        save_token = logins_collection.find_one_and_update({"userId":response["_id"]},{"$set":{"token":encoded_jwt, "loginTime": ct}}, upsert=True)
+        print(save_token)
         
-        return {"token":encoded_jwt}
+        return {"message":"logged in successfully","token":encoded_jwt}
         
     except Exception as e:
+        print({"error":e})
         return  e
 
 def User_info(User_id: str):

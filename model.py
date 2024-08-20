@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from bson import ObjectId
+from datetime import datetime
 
 class Pet(BaseModel):
     name:str
@@ -19,5 +20,6 @@ class User(BaseModel):
 class UserLogings(BaseModel):
     userId: str
     token: str
+    loginTime: datetime
     
     
