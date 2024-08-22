@@ -1,3 +1,4 @@
+import jwt.exceptions
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import json
@@ -5,7 +6,7 @@ import json
 from bson.objectid import ObjectId
 from pymongo.errors import PyMongoError
 import bcrypt 
-import jwt  
+import jwt 
 
 from datetime import datetime
 
@@ -133,7 +134,7 @@ def login_user(data: dict):
             return {"message": "email or password is wrong."}
         
         ct = datetime.now()
-        ts = ct.timestamp() + (20*60)
+        ts = ct.timestamp() + (5)
         
         bytes = response["_id"].encode(config["bcrypt"]["encode_type"]) 
         salt = bcrypt.gensalt(config["bcrypt"]["salt"])
@@ -149,6 +150,20 @@ def login_user(data: dict):
     except Exception as e:
         print({"error":e})
         return  e
+    
+def test_token(data, token):
+    try:
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+        print(token)
+        decoded_token = jwt.decode(token, config["jwt"]["secret"], algorithms=config["jwt"]["algorithm"], options={"verify_exp": False}  )
+        print(decoded_token)
+        return decoded_token
+    except jwt.exceptions.ExpiredSignatureError as e:
+        return("error",str(e))
+    except Exception as e:
+        print(e)
+        return{"error": e}
 
 def User_info(User_id: str):
     try:

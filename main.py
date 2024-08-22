@@ -1,9 +1,24 @@
-from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI, Body, HTTPException, Depends, Request
 import uvicorn
 import DB
 import model
 
+
 app = FastAPI()
+
+def getToken(req:Request):
+    try:
+        token = req.headers["Authorization"].split(" ")[1]
+        return token
+    except Exception as e:
+        print(e)
+        
+        
+@app.post("/token")
+def toekn(data: dict = Body(...), token= Depends(getToken)): 
+    return token
+    data = DB.test_token(data, token)
+    return data
 
 @app.get("/all/pets")
 async def get_pets():
